@@ -30,7 +30,6 @@ class WeatherController extends Controller
 		
 		//конвертируем температуру из кельвина в цельсий, и убираем лишние знаки
 		$temp = round($temp_calvin - 273.15);
-	
 				
         return view('weather')
                ->with('city_name', $location_name)
@@ -56,6 +55,7 @@ class WeatherController extends Controller
 		$curl_data = curl_exec($curl);
 		curl_close($curl);
 		$weather_json = json_decode($curl_data, true);
+		
 		//В случае неверного названия города - получаем дефолтное значение для Брянска
 		if($weather_json['cod'] == 404){
 			$weather_json = WeatherController::curl_query($default_city, $key, $default_city);

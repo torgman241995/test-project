@@ -21,3 +21,6 @@ Route::get('/weather', 'WeatherController@index')->name('weather');
 Route::get('/weather/{city_name}', 'WeatherController@index')->name('weather');
 // Заказы
 Route::get('/orders', 'OrdersController@index')->name('orders');
+Route::get('/update/{id}', 'OrdersController@update')->name('orders');
+Route::get('/save', 'OrdersController@save')->name('orders');
+Route::post('/save', 'OrdersController@save')->name('orders');

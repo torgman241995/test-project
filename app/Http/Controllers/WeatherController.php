@@ -14,24 +14,26 @@ class WeatherController extends Controller
 
     public function index(Request $request)
     {
+		$default_city = 'Bryansk';
 		$city_name = $request->city_name;
 		if(!isset($city_name) || empty($city_name)){
-			$city_name = 'Bryansk';
+			$city_name = $default_city;
 		}
 		
 		//Токен для подключения к сервису погоды - openweathermap.org
         $key = env('WEATHER_KEY');
 
-		$weather_data = WeatherController::curl_query($city_name, $key);
+		$weather_data = WeatherController::curl_query($city_name, $key, $default_city);
 		
 		$temp_calvin = $weather_data['main']['temp'];
+		$location_name = $weather_data['name'];
 		
 		//конвертируем температуру из кельвина в цельсий, и убираем лишние знаки
 		$temp = round($temp_calvin - 273.15);
 	
 				
         return view('weather')
-               ->with('city_name', $city_name)
+               ->with('city_name', $location_name)
                ->with('temp', $temp);
     }
 	
@@ -39,8 +41,9 @@ class WeatherController extends Controller
 		Запрос к апи сервиса погоды
 		@city_name - название города по которому тянем данные через API
 		@key -  API
+		@default_city - дефолтное значение названия города
 	**/
-	public function curl_query($city_name, $key)
+	public function curl_query($city_name, $key, $default_city)
     {
 		$query_url = "https://api.openweathermap.org/data/2.5/weather?q=".$city_name."&appid=".$key;
 		$curl = curl_init();
@@ -53,7 +56,11 @@ class WeatherController extends Controller
 		$curl_data = curl_exec($curl);
 		curl_close($curl);
 		$weather_json = json_decode($curl_data, true);
-		
+		//В случае неверного названия города - получаем дефолтное значение для Брянска
+		if($weather_json['cod'] == 404){
+			$weather_json = WeatherController::curl_query($default_city, $key, $default_city);
+		}
+	
 		return $weather_json;
 	}    
 }

@@ -173,28 +173,29 @@
 								$full_summ = 0;
 								if($order->order_products->count() > 0){
 									foreach($order->order_products as $product_data){
+										//суммируем чек
+										$line_summ = $product_data->quantity * $product_data->price;
+										$full_summ = $full_summ + $line_summ;
 								?>
 									<div data-id="<?php echo $product_data->id;?>" data-type="full_block" style="margin-bottom: 15px; align: left;">
 										<a href="javascript:void(0);" data-id="<?php echo $product_data->id;?>" data-type="delete_block" class="btn delete_btn" style="margin-right: 10px;">x</a>
 										<b><?php echo $product_data->product->name." - ".$product_data->product->price;?>руб x </b>
-										<input style="width: 50px;" type="number" min="0" data-id="<?php echo $product_data->id;?>" data-type="count_block" data-price="" value="<?php echo $product_data->quantity;?>">
+										<input style="width: 50px;" type="number" min="0" data-id="<?php echo $product_data->id;?>" data-type="count_block" data-price="<?php echo $product_data->price;?>" value="<?php echo $product_data->quantity;?>">
 										<span>
 											<div style="padding-left: 200px;">
-												<b>(<b data-id="<?php echo $product_data->id;?>" data-type="summ_block">123</b> руб)</b>
+												<b>(<b class="<?php echo $product_data->id;?>" data-id="<?php echo $product_data->id;?>" data-type="summ_block" value=""></b> руб)</b>
 											</div>
 										</span>
 									</div>
 								<?php
-										//суммируем чек
-										$line_summ = $product_data->quantity * $product_data->price;
-										$full_summ = $full_summ + $line_summ;
 									} 
 								}
 								else{
 									echo '---';
 								}
 											
-							?>						
+							?>	
+							<h2>Всего: <b class="full_check"></b> руб</h2>
 					</div>
 				</form>
 				
@@ -203,12 +204,60 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<script>
 			$(function() {
+				//получаем полную сумму по выбранному товару	
+					var full_summ = 0;
+					$(`[data-type="count_block"]`).each(function(i,elem) {
+						//получаем идентификатор блока
+						var block_id = $(this).attr('data-id');
+						var block_price = $(this).attr('data-price');
+						var block_count = $(this).val();
+						var finish_summ = 0;						
+						
+						finish_summ = block_price * block_count;
+						
+						//проставляем общую стоимость конкретного товара						
+						$(`[data-type="summ_block"]`).each(function(i,elem) {
+							if($(this).hasClass(block_id)){
+								$(this).text(finish_summ);
+							}
+						});
+						
+						//общая сумма заказа
+						full_summ = full_summ + finish_summ;
+						$('.full_check').text(full_summ);
+					});
+				
+				//при изменении количества - пересчитываем суммы
+				$(`[data-type="count_block"]`).change(function() {
+				  var full_summ = 0;
+					$(`[data-type="count_block"]`).each(function(i,elem) {
+						//получаем идентификатор блока
+						var block_id = $(this).attr('data-id');
+						var block_price = $(this).attr('data-price');
+						var block_count = $(this).val();
+						var finish_summ = 0;						
+						
+						finish_summ = block_price * block_count;
+						
+						//проставляем общую стоимость конкретного товара						
+						$(`[data-type="summ_block"]`).each(function(i,elem) {
+							if($(this).hasClass(block_id)){
+								$(this).text(finish_summ);
+							}
+						});
+						
+						//общая сумма заказа
+						full_summ = full_summ + finish_summ;
+						$('.full_check').text(full_summ);
+					});
+				});
+					
+				//отправляем форму
 				$(".btn" ).click(function() {
 					var id = $("#id" ).val();
 					var email = $("#email" ).val();
 					var partner_id = $("#partner_id" ).val();
 					var status = $("#status" ).val();
-					
 					
 				});
 			});

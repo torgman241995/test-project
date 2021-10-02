@@ -55,9 +55,41 @@ class OrdersController extends Controller
 		Обновление данных заказа
 	**/
 	public function save(Request $request)
-    {		
+    {					
 		//Данные заказа
-		
-        return view('save');
+		if(isset($request) && !empty($request)){
+			$id = $request['id'];
+			$email = $request['email'];
+			$partner_id = $request['partner_id'];
+			$status = $request['status'];
+			
+			//обновляем данные по товарам добавленным в заказа
+			if(isset($request['items']) && $request['items'] !== NULL){
+				foreach($request['items'] as $lines => $items){
+					
+					$decode = json_decode($items);
+					$item_id = $decode->item_id;
+					$item_count = $decode->item_count;
+					
+					//обновляем данные по конкретному товару
+					$item_line = OrderProduct::where('id', $item_id)->first();
+					if($item_count > 0){
+						$item_line->quantity = $item_count;
+						$item_line->save();
+					}
+					else{
+						$item_line->delete();
+					}
+				}
+			}
+			
+			//обновляем данные основной части заказа
+			$order_upd = Order::where('id', $id)->first();
+			$order_upd->status = $status;
+			$order_upd->client_email = $request['email'];
+			$order_upd->partner_id = $partner_id;
+			$order_upd->save();
+		}
+        //return view('save');
     }
 }

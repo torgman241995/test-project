@@ -202,6 +202,7 @@
             </div>
         </div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script>
 			$(function() {
 				//получаем полную сумму по выбранному товару	
@@ -262,10 +263,57 @@
 					
 					//отправляем форму
 					$(".btn" ).click(function() {
+						//var csrfToken = $('meta[name="csrf-token"]').attr("content");
 						var id = $("#id" ).val();
 						var email = $("#email" ).val();
 						var partner_id = $("#partner_id" ).val();
 						var status = $("#status" ).val();
+						
+						//собираем данные по товарам, для обновления
+						var dataObj = {};
+						var dataArr = [];
+						$(`[data-type="count_block"]`).each(function(i,elem) {
+							//получаем идентификатор блока
+							var item_id = $(this).attr('data-id');
+							var item_count = $(this).val();	
+
+							dataObj.item_id = item_id;
+							dataObj.item_count = item_count;
+							dataArr.push(JSON.stringify(dataObj));
+							//arr.push(line)
+						})
+						
+						if (id.length < 1 || email.length < 6 || partner_id.length < 1 || status.length < 1) {
+							//return false;
+							alert('Заполните верно все поля');
+						} else {
+							if (email.indexOf('@') > -1)
+							{
+								if (email.indexOf('.') > -1)
+								{
+									axios({
+									  method: 'post',
+									  url: '/save',
+									  data: {
+											id: id,
+											email: email,
+											partner_id: partner_id,
+											status: status,
+											items: dataArr,
+									  }
+									});
+									//Сообщение об успешной отправке формы
+									alert('Данные сохранены');
+								}
+								else
+								{
+									alert('Введите верный адрес email');
+								}
+							}
+							else {
+								alert('Введите верный адрес email');
+							}
+						}
 						
 					});
 			});
